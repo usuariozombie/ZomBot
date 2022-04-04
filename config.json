@@ -1,4 +1,5 @@
 {
     "prefix": ">",
-    "token": TOKEN
+    "token": "TOKEN",
+    "ipkey": "KEY"
 }
