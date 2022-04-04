@@ -1,16 +1,17 @@
-import nextcord
+import nextcord, json
 from nextcord.ext import commands
-from global_functions import ban_msg, kick_msg, read_database, write_database
+from global_functions import ban_msg, kick_msg
 import random
 import asyncio
-from difflib import get_close_matches
-from nextcord.colour import Color
-from nextcord.embeds import Embed
-from datetime import datetime
+from datetime import datetime, timedelta
+import humanfriendly
 
 
-PREFIX = ">"
 BOT_USER_ID = "876845404786946099"
+with open("config.json") as jFile:
+    data = json.load(jFile)
+    jFile.close()
+PREFIX = data["prefix"]
 
 
 class BanConfirm(nextcord.ui.View):
@@ -44,36 +45,7 @@ class BanConfirm(nextcord.ui.View):
         self.value = False
         self.stop()
 
-class LockConfirm(nextcord.ui.View):
-    async def interaction_check(self,interaction):
-        if self.ctx.author != interaction.user:
-            await interaction.response.send_message('Not your message', ephemeral=True)
-            return False
-        return True
-    async def on_timeout(self):
-        for child in self.children:
-            child.disabled = True
-        await self.message.edit(view=self)
-    def __init__(self,ctx,**kwargs):
-        super().__init__(timeout=60,**kwargs)
-        self.value = None
-        self.ctx = ctx
 
-    @nextcord.ui.button(
-        label="Confirm", style=nextcord.ButtonStyle.green, custom_id="yes"
-    )
-    async def confirm(
-        self, button: nextcord.ui.Button, interaction: nextcord.Interaction
-    ):
-        self.value = True
-        self.stop()
-
-    @nextcord.ui.button(label="Cancel", style=nextcord.ButtonStyle.red, custom_id="no")
-    async def cancel(
-        self, button: nextcord.ui.Button, interaction: nextcord.Interaction
-    ):
-        self.value = False
-        self.stop()
 
 class Moderation(commands.Cog):
 
@@ -91,7 +63,7 @@ class Moderation(commands.Cog):
         if str(message.author.id) != str(BOT_USER_ID):
             send = message.channel.send
 
-    @commands.command(name="ban", description="Bans the member from your server.")
+    @commands.command(help="🚓 - Bans the member from your server.")
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: nextcord.Member = None, *, reason=None):
         if member == None:
@@ -127,7 +99,7 @@ class Moderation(commands.Cog):
         await member.send(f"You got banned in **{guild}** | Reason: **{reason}**")
         await member.ban(reason=reason)
 
-    @commands.command(description="Unbans a member from your server by ID")
+    @commands.command(help="🆓 - Unbans a member from your server by ID")
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, id: int):
         user = await self.client.fetch_user(id)
@@ -135,7 +107,7 @@ class Moderation(commands.Cog):
         em = nextcord.Embed(title="Unban Success", description=f"You have unbanned <@{id}>")
         await ctx.send(embed=em)
 
-    @commands.command(name="kick", description="Kicks the member from your server.")
+    @commands.command(help="🚪 - Kicks the member from your server.")
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: nextcord.Member = None, *, reason=None):
         if member == None:
@@ -177,213 +149,8 @@ class Moderation(commands.Cog):
         await member.send(f"You got kicked in **{guild}** | Reason: **{reason}**")
         await member.kick(reason=reason)
 
-    @commands.command(name="tempmute", description="Mutes a member indefinitely.")
-    @commands.has_permissions(manage_messages=True)
-    async def tempmute(
-        self, ctx, member: nextcord.Member = None, time=None, *, reason=None
-    ):
-        guild = ctx.guild
-        if member == None:
-            em1 = nextcord.Embed(
-                title="Tempmute Error", description="Member to mute - Not Found"
-            )
-            return await ctx.send(embed=em1)
-        elif member.id == ctx.author.id:
-            em5 = nextcord.Embed(
-                title="Tempmute Error", description="Don't bother, ive tried"
-            )
-            return await ctx.send(embed=em5)
-        if time == None:
-            em2 = nextcord.Embed(
-                title="Tempmute Error", description="Time to mute - Not Found"
-            )
-            return await ctx.send(embed=em2)
-        elif ctx.author.top_role.position < member.top_role.position:
-            em3 = nextcord.Embed(
-                title="Tempmute Error",
-                description="Member **higher** than you in the role heirarchy - Invalid Permission",
-            )
-            return await ctx.send(embed=em3)
-        if not (ctx.guild.me.guild_permissions.manage_roles):
-            embed2 = nextcord.Embed(
-                title="Tempmute Error",
-                description="I require the ``Manage Roles`` permisson to run this command - Missing Permission",
-            )
-            return await ctx.send(embed=embed2)
-        elif ctx.author.top_role.position == member.top_role.position:
-            em4 = nextcord.Embed(
-                title="Tempmute Error",
-                description="Member has same role as you in the role heirarchy - Invalid Permission",
-            )
-            return await ctx.send(embed=em4)
-        mutedRole = nextcord.utils.get(guild.roles, name="Muted")
-        if ctx.guild.me.top_role.position < mutedRole.position:
-            em3 = nextcord.Embed(
-                title="Tempmute Error",
-                description="Muted role too high to give to a member",
-            )
-            return await ctx.send(embed=em3)
-        if not mutedRole:
-            mutedRole = await guild.create_role(name="Muted")
-            await ctx.send("No mute role found. Creating mute role...")
-            for channel in guild.channels:
-                await channel.set_permissions(
-                    mutedRole,
-                    speak=False,
-                    send_messages=False,
-                    read_message_history=True,
-                )
 
-        if not time == None:
-            time_convert = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-            tempmute = int(time[0]) * time_convert[time[-1]]
-            embed = nextcord.Embed(
-                title="Tempmute Success",
-                description=f"{member.mention} was muted ",
-                colour=nextcord.Colour.blue(),
-            )
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.add_field(name="Duration", value=time)
-            await ctx.send(embed=embed)
-            await member.add_roles(mutedRole, reason=reason)
-            await member.send(
-                f"You have been muted from: **{guild.name}** | Reason: **{reason}** | Time: **{time}**"
-            )
-            if not time == None:
-                await asyncio.sleep(tempmute)
-                await member.remove_roles(mutedRole)
-                await member.send(f"You have been unmuted from **{guild}**")
-            return
-
-    @commands.command(
-        name="mute", description="Mutes a member for a specific amount of time."
-    )
-    @commands.has_permissions(manage_messages=True)
-    async def mute(self, ctx, member: nextcord.Member = None, *, reason=None):
-        guild = ctx.guild
-        if member == None:
-            em1 = nextcord.Embed(
-                title="Mute Error", description="Member to mute - Not Found"
-            )
-            return await ctx.send(embed=em1)
-        elif member.id == ctx.author.id:
-            em5 = nextcord.Embed(
-                title="Mute Error", description="Don't bother, ive tried"
-            )
-            return await ctx.send(embed=em5)
-        elif ctx.author.top_role.position < member.top_role.position:
-            em3 = nextcord.Embed(
-                title="Mute Error",
-                description="Member **higher** than you in the role heirarchy - Invalid Permission",
-            )
-            return await ctx.send(embed=em3)
-        elif ctx.author.top_role.position == member.top_role.position:
-            em4 = nextcord.Embed(
-                title="Mute Error",
-                description="Member has same role as you in the role heirarchy - Invalid Permission",
-            )
-            return await ctx.send(embed=em4)
-        if not (ctx.guild.me.guild_permissions.manage_roles):
-            embed2 = nextcord.Embed(
-                title="Mute Error",
-                description="I require the ``Manage Roles`` permisson to run this command - Missing Permission",
-            )
-            return await ctx.send(embed=embed2)
-        mutedRole = nextcord.utils.get(guild.roles, name="Muted")
-        if ctx.guild.me.top_role.position < mutedRole.position:
-            em3 = nextcord.Embed(
-                title="Mute Error",
-                description="Muted role too high to give to a member",
-            )
-            return await ctx.send(embed=em3)
-        if not mutedRole:
-            mutedRole = await guild.create_role(name="Muted")
-            await ctx.send("No mute role found. Creating mute role...")
-            for channel in guild.channels:
-                await channel.set_permissions(
-                    mutedRole,
-                    speak=False,
-                    send_messages=False,
-                    read_message_history=True,
-                )
-
-        embed = nextcord.Embed(
-            title="Mute Success",
-            description=f"{member.mention} was muted ",
-            colour=nextcord.Colour.blue(),
-        )
-        embed.add_field(name="Reason:", value=reason, inline=False)
-        await ctx.send(embed=embed)
-        await member.add_roles(mutedRole, reason=reason)
-        await member.send(
-            f"You have been muted from: **{guild.name}** | Reason: **{reason}**"
-        )
-        return
-
-    @commands.command(name="unmute", description="Unmutes a muted member.")
-    @commands.has_permissions(manage_messages=True)
-    async def unmute(self, ctx, member: nextcord.Member = None, *, reason=None):
-        guild = ctx.guild
-        if member == None:
-            em1 = nextcord.Embed(
-                title="Unmute Error", description="Member to unmute - Not Found"
-            )
-            return await ctx.send(embed=em1)
-        elif member.id == ctx.author.id:
-            em5 = nextcord.Embed(
-                title="Unmute Error", description="wHat? <:WHA:815331017854025790>"
-            )
-            return await ctx.send(embed=em5)
-        elif ctx.author.top_role.position < member.top_role.position:
-            em3 = nextcord.Embed(
-                title="Unmute Error",
-                description="Member **higher** than you in the role heirarchy - Invalid Permission",
-            )
-            return await ctx.send(embed=em3)
-        elif ctx.author.top_role.position == member.top_role.position:
-            em4 = nextcord.Embed(
-                title="Unmute Error",
-                description="Member has same role as you in the role heirarchy - Invalid Permission",
-            )
-            return await ctx.send(embed=em4)
-        if not (ctx.guild.me.guild_permissions.manage_roles):
-            embed2 = nextcord.Embed(
-                title="Unmute Error",
-                description="I require the ``Manage Roles`` permisson to run this command - Missing Permission",
-            )
-            return await ctx.send(embed=embed2)
-        mutedRole = nextcord.utils.get(guild.roles, name="Muted")
-        if ctx.guild.me.top_role.position < mutedRole.position:
-            em3 = nextcord.Embed(
-                title="Unmute Error",
-                description="Muted role too high to remove from a member",
-            )
-            return await ctx.send(embed=em3)
-        if not mutedRole:
-            mutedRole = await guild.create_role(name="Muted")
-            await ctx.send("No mute role found. Creating mute role...")
-            for channel in guild.channels:
-                await channel.set_permissions(
-                    mutedRole,
-                    speak=False,
-                    send_messages=False,
-                    read_message_history=True,
-                )
-
-        embed = nextcord.Embed(
-            title="Unmute Success",
-            description=f"{member.mention} was unmuted ",
-            colour=nextcord.Colour.blue(),
-        )
-        embed.add_field(name="Reason:", value=reason, inline=False)
-        await ctx.send(embed=embed)
-        await member.remove_roles(mutedRole, reason=reason)
-        await member.send(
-            f"You have been unmuted from: **{guild.name}** | Reason: **{reason}**"
-        )
-        return
-
-    @commands.command(description="Clears a bundle of messages.")
+    @commands.command(help="🗑️ - Clears a bundle of messages.")
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount=10):
         amount = amount + 1
@@ -399,7 +166,7 @@ class Moderation(commands.Cog):
             asyncio.sleep(10)
             await msg.delete()
 
-    @commands.command(description="Change the channels slowmode.")
+    @commands.command(help="🐢 - Change the channels slowmode.")
     @commands.has_permissions(manage_channels=True)
     async def slowmode(self, ctx, time: int):
         try:
@@ -425,9 +192,7 @@ class Moderation(commands.Cog):
             await ctx.send("Error has occoured, notifying dev team")
             print(Exception)
 
-    @commands.command(
-        aliases=["giverole", "addr"], description="Gives a member a certain role."
-    )
+    @commands.command(aliases=["giverole", "addr"], help="➕ - Gives a member a certain role.")
     @commands.has_permissions(manage_roles=True)
     async def addrole(
         self, ctx, member: nextcord.Member = None, *, role: nextcord.Role = None
@@ -484,10 +249,7 @@ class Moderation(commands.Cog):
         except Exception:
             print(Exception)
 
-    @commands.command(
-        aliases=["takerole", "remover"],
-        description="Removes a certain role from a member.",
-    )
+    @commands.command(aliases=["takerole", "remover"], help="➖ - Removes a certain role from a member.",)
     @commands.has_permissions(manage_roles=True)
     async def removerole(
         self,
@@ -548,133 +310,36 @@ class Moderation(commands.Cog):
                 return
         except Exception:
             print(Exception)
-
-    @commands.command(description="Locks the channel.")
-    @commands.has_permissions(kick_members=True)
-    async def lock(self, ctx, channel: nextcord.TextChannel = None, setting = None):
-        if setting == '--server':
-            view = LockConfirm()
-            em = nextcord.Embed(
-                title="Are you sure?",
-                description="This is a very risky command only to be used in important situations such as, `Raid on the Server`. **If this command is used for the wrong purpose you may risk getting demoted if not banned from the staff team.**",
-            )
-            await ctx.author.send(embed = em, view=view)
-            await view.wait()
-            if view.value is None:
-                await ctx.author.send("Command has been Timed Out, please try again.")
-            elif view.value:
-                for channel in ctx.guild.channels:
-                    await channel.set_permissions(
-                        ctx.guild.default_role,
-                        reason=f"{ctx.author.name} locked {channel.name} using --server override",
-                        send_messages=False,
-                    )
-                embed = nextcord.Embed(
-                title="Lockdown Success",
-                description=f"Locked entire server <:saluteboi:897263732948885574>",
-                )
-                await ctx.send(embed=embed)
-            else:
-                lockEmbed = nextcord.Embed(
-                    title="Lock Cancelled",
-                    description="Lets pretend like this never happened them :I",
-                )
-                await ctx.author.send(embed=lockEmbed)
-            return
-        if channel is None:
-            channel = ctx.message.channel
-        await channel.set_permissions(
-            ctx.guild.default_role,
-            reason=f"{ctx.author.name} locked {channel.name}",
-            send_messages=False, #
-        )
-        embed = nextcord.Embed(
-            title="Lockdown Success",
-            description=f"Locked {channel.mention} <:saluteboi:897263732948885574>",
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(description="Unlocks the channel.")
-    @commands.has_permissions(kick_members=True)
-    async def unlock(self, ctx, channel: nextcord.TextChannel = None, setting=None):
-        if setting == '--server':
-            for channel in ctx.guild.channels:
-                await channel.set_permissions(
-                    ctx.guild.default_role,
-                    reason=f"{ctx.author.name} unlocked {channel.name} using --server override",
-                    send_messages=None,
-                )
-            embed = nextcord.Embed(
-            title="Unlock Success",
-            description=f"Unlocked entire server (you might have to manualy relock servers that shouldnt have been unlocked)",
-            )
-            await ctx.send(embed=embed)
-            return
-        if channel is None:
-            channel = ctx.channel
-        await channel.set_permissions(
-            ctx.guild.default_role,
-            reason=f"{ctx.author.name} unlocked {channel.name}",
-            send_messages=True,
-        )
-        embed = nextcord.Embed(
-            title="Unlock Success",
-            description=f"Unlocked {channel.mention} <:happyboi:804920510508433428>",
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(description="Modbans the member.")
-    @commands.has_permissions(kick_members=True)
-    @commands.cooldown(1, 21600, commands.BucketType.user)
-    async def modban(self, ctx, member, *, reason=None):
-        if reason is None:
-            reason = f"{ctx.author.name} modbanned {member.name}"
-        else:
-            reason = (
-                f"{ctx.author.name} modbanned {member.name} for the reason of {reason}"
-            )
-        if member == None:
-            embed1 = nextcord.Embed(
-                title="Ban Error", description="Member to ban - Not Found"
-            )
-            return await ctx.send(embed=embed1)
-        if member.id == ctx.author.id:
-            embed69 = nextcord.Embed(
-                title="Ban Error",
-                description="Can not ban yourself, trust me I woulda ages ago <:hehe:796743161208504320>",
-            )
-            return await ctx.send(embed=embed69)
-        em = nextcord.Embed(
-            title="Are you sure?",
-            description="This is a very risky command only to be used in important situations such as, `NSFW or NSFLPosting` or `Raid on the Server`. Only use this command if no admin is online or responding. **If this command is used for the wrong purpose you may risk getting demoted if not banned from the staff team.**",
-        )
-        view = BanConfirm()
-        await ctx.author.send(embed=em, view=view)
-        await view.wait()
-        if view.value is None:
-            await ctx.author.send("Command has been Timed Out, please try again.")
-        elif view.value:
-            guild = ctx.guild
-            banMsg = random.choice(ban_msg)
-            banEmbed = nextcord.Embed(
-                title="Ban Success", description=f"{member.mention} {banMsg}"
-            )
-            banEmbed.add_field(name="Reason", value=reason)
-            await ctx.author.send(embed=banEmbed)
-            await member.ban(reason=reason)
-            await member.send(f"You got banned in **{guild}** | Reason: **{reason}**")
-        else:
-            banEmbed = nextcord.Embed(
-                title="Ban Cancelled",
-                description="Lets pretend like this never happened them :I",
-            )
-            await ctx.author.send(embed=banEmbed)
     
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Moderation enabled.\u001b[0m")
+    
 
-    @commands.command(help = "Enable or disable the different commands with this command.")
+    
+    @commands.command(help = "🔇 - Mute members with this command.")
+    async def mute(self, ctx, member: nextcord.Member, time=None, reason=None):
+        if member == None:
+            await ctx.send("Please mention a user to mute!")
+        if time == None:
+            await ctx.send("Please specify a time to mute the user for!")
+        else:
+            time = humanfriendly.parse_timespan(time)
+            await member.edit(timeout=nextcord.utils.utcnow() + timedelta(seconds=time))
+            await member.send(f"You got muted in {ctx.guild} | Reason: {reason}")
+            await ctx.send(f"{member.mention} has been muted for {humanfriendly.format_timespan(time)} | Reason: {reason}")
+
+
+    @commands.command(help = "🔊 - Unmute members with this command.")
+    async def unmute(self, ctx, member: nextcord.Member, reason=None):
+        if member == None:
+            await ctx.send("Please mention a user to mute!")
+        else:
+            await member.edit(timeout=None)
+            await ctx.send(f"{member.mention} has been muted for {reason}")
+
+
+    @commands.command(help = "🎚️ - Enable or disable the different commands with this command.")
     async def switch(self, ctx, *, command):
         if not ctx.author.id == 200391563346575361:
             await ctx.reply("Don't even try POGGERS.")
@@ -688,6 +353,53 @@ class Moderation(commands.Cog):
             command.enabled = not command.enabled
             ternary = "enabled" if command.enabled else "disabled"
             await ctx.send (f"The {command.qualified_name} command has been {ternary}")
+    
+    
+    @commands.command(help = "🚔 - Ban command for moderators.")
+    @commands.has_permissions(kick_members=True)
+    async def modban(self, ctx, member: nextcord.Member, *, reason=None):
+        if reason is None:
+            reason = f"{ctx.author.name} modbanned {member.name}"
+        else:
+            reason = (
+                f"{ctx.author.name} modbanned {member.name} for the reason of {reason}"
+            )
+        if member == None:
+            embed1 = nextcord.Embed(
+                title="Ban Error", description="Member not found!"
+            )
+            return await ctx.send(embed=embed1)
+        if member.id == ctx.author.id:
+            embed69 = nextcord.Embed(
+                title="Ban Error",
+                description="Sorry, you cannot ban yourself"
+            )
+            return await ctx.send(embed=embed69)
+        em = nextcord.Embed(
+            title="Are you sure?",
+            description=f"**Are you sure you want to ban {member}?**\nThis action cannot be undone and should just be used in special cases"
+        )
+        view = BanConfirm(ctx)
+        await ctx.author.send(embed=em, view=view)
+        await view.wait()
+        if view.value is None:
+            await ctx.author.send("Command timed out, try again later.")
+        elif view.value:
+            guild = ctx.guild
+            banMsg = random.choice(ban_msg)
+            banEmbed = nextcord.Embed(
+                title="Ban Success", description=f"{member.mention} {banMsg}"
+            )
+            banEmbed.add_field(name="Reason", value=reason)
+            await ctx.author.send(embed=banEmbed)
+            await member.ban(reason=reason)
+            await member.send(f"You got banned in **{guild}** | Reason: **{reason}**")
+        else:
+            banEmbed = nextcord.Embed(
+                title="Ban Cancelled",
+                description="Your ban has been cancelled"
+            )
+            await ctx.author.send(embed=banEmbed)
 
 
 

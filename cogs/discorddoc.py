@@ -4,6 +4,7 @@ from nextcord.ext import commands
 from datetime import datetime
 
 
+
 class DiscordHelp(commands.Cog):
 
     """Search information in the discord documentation."""
@@ -19,13 +20,15 @@ class DiscordHelp(commands.Cog):
         self.index = self.search_client.init_index("discord")
 
 
+
+
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Discord Docs enabled.\u001b[0m")
 
 
-    @commands.command(help="Searches in discord API")
-    async def ddoc(self, ctx, *, search_term):
+    @commands.command(help="🔎 - Searches in discord docs.")
+    async def ddocs(self, ctx, *, search_term):
         results = await self.index.search_async(search_term)
         description = ""
         hits = []
