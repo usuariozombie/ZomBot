@@ -6,9 +6,8 @@
 # ︽︽︽︽︽︽︽︽︽︽︽︽︽︽︽︽︽︽
 
 from unicodedata import name
-import nextcord, os, json
-from nextcord.ext import commands, tasks
-from nextcord import Intents
+import nextcord, os, json, aiohttp
+from nextcord.ext import commands
 from datetime import datetime
 
 with open("config.json") as jFile:
@@ -88,6 +87,11 @@ async def unload(ctx, extension):
 async def reload(ctx, extension):
     client.reload_extension(f"cogs.{extension}")
     await ctx.send("Se ha recargado la cog.")
+
+async def startup():
+    client.session = aiohttp.ClientSession()
+
+client.loop.create_task(startup())
 
 
 client.run(BotToken)
