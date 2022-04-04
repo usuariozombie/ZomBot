@@ -37,6 +37,13 @@ if os.name == 'posix':
 else:
     _ = os.system('cls')
 
+with open("config.json") as jFile:
+    data = json.load(jFile)
+    jFile.close()
+PREFIX = data["prefix"]
+IPKEY = data["ipkey"]
+BOT_USER_ID = "876845404786946099"
+
 
 print(ZomTitle)
 
