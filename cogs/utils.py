@@ -1,9 +1,10 @@
-import time, sys, os, nextcord, requests, aiohttp, psutil
+import time, sys, os, nextcord, requests, aiohttp, psutil, json
 from inspect import getsource
 from time import time
 from datetime import datetime
 from nextcord.ext import commands, tasks
 from io import BytesIO
+from main import PREFIX, IPKEY, BOT_USER_ID
 from global_functions import EMOJIS_TO_USE_FOR_CALCULATOR as etufc
 from nextcord import ButtonStyle
 from nextcord.ui import button, View, Button
@@ -466,7 +467,7 @@ class Utils(commands.Cog):
         em.add_field(name="CPU usage:", value=f"{psutil.cpu_percent()}%")
         em.add_field(name="RAM usage:", value=f"{psutil.virtual_memory()[2]}%")
         em.set_footer(
-            text=f"Status requested by: {ctx.author}", icon_url=ctx.author.display_avatar
+            text=f"Status requested by: {ctx.author.name}", icon_url=ctx.author.display_avatar
         )
         await ctx.send(embed=em)
     
@@ -500,6 +501,33 @@ class Utils(commands.Cog):
         suggestionMsg = await channel.fetch_message(id)
         embed = nextcord.Embed(title=f'Suggestion Approved!', description=f'The suggestion id of `{suggestionMsg.id}` has been approved by {ctx.author.mention}')
         await channel.send(embed=embed)
+    
+    @commands.command(help = "📶 - Requested IP information.")
+    async def iplookup(self, ctx, *, ipaddr: str = "9.9.9.9"):
+        r = requests.get(f"http://extreme-ip-lookup.com/json/{ipaddr}?key={IPKEY}")
+        geo = r.json()
+        em = nextcord.Embed()
+        fields = [
+            {'name': 'IP Address', 'value': geo['query']},
+            {'name': 'Country', 'value': geo['country']},
+            {'name': 'City', 'value': geo['city']},
+            {'name': 'Region', 'value': geo['region']},
+            {'name': 'Latitude', 'value': geo['lat']},
+            {'name': 'Longitude', 'value': geo['lon']},
+            {'name': 'ISP', 'value': geo['isp']},
+            {'name': 'Status', 'value': geo['status']},
+            {'name': 'Organization', 'value': geo['org']},
+            {'name': 'Region', 'value': geo['region']},
+            {'name': 'IP Type', 'value': geo['ipType']},
+            {'name': 'Continent', 'value': geo['continent']},
+        ]
+        for field in fields:
+            if field['value']:
+                em.set_footer(text=f"IP requested by: {ctx.author.name}", icon_url=ctx.author.display_avatar)
+                em.timestamp = datetime.utcnow()
+                em.add_field(name=field['name'], value=field['value'])
+                
+        return await ctx.send(embed=em)
 
 
 

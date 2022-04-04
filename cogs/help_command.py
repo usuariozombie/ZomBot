@@ -53,7 +53,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
             emoji = getattr(cog, "COG_EMOJI", None)
             options.append(nextcord.SelectOption(
                 label=cog.qualified_name if cog else "No Category",
-                emoji=emoji,
+                emoji=emoji if cog else "🤷‍♂️",
                 description=cog.description[:100] if cog and cog.description else None
             ))
 

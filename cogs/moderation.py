@@ -1,17 +1,9 @@
-import nextcord, json
+import nextcord, json, random, asyncio, humanfriendly
 from nextcord.ext import commands
 from global_functions import ban_msg, kick_msg
-import random
-import asyncio
 from datetime import datetime, timedelta
-import humanfriendly
+from main import BOT_USER_ID
 
-
-BOT_USER_ID = "876845404786946099"
-with open("config.json") as jFile:
-    data = json.load(jFile)
-    jFile.close()
-PREFIX = data["prefix"]
 
 
 class BanConfirm(nextcord.ui.View):
