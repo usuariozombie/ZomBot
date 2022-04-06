@@ -1,3 +1,4 @@
+from distutils.log import error
 import time, sys, os, nextcord, requests, aiohttp, psutil, json
 from inspect import getsource
 from time import time
@@ -8,6 +9,7 @@ from main import PREFIX, IPKEY, BOT_USER_ID
 from global_functions import EMOJIS_TO_USE_FOR_CALCULATOR as etufc
 from nextcord import ButtonStyle
 from nextcord.ui import button, View, Button
+from pytube import YouTube
 
 
 us = 0
@@ -527,8 +529,9 @@ class Utils(commands.Cog):
                 em.timestamp = datetime.utcnow()
                 em.add_field(name=field['name'], value=field['value'])
                 
-        return await ctx.send(embed=em)
-
+        await ctx.send(embed=em)
+        c = nextcord.Client()
+        return await c.close()
 
 
 

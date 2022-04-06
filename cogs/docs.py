@@ -106,6 +106,8 @@ class Docs(commands.Cog):
                 cache[key] = self.parse_object_inv(stream, page)
 
         self._docs_cache = cache
+        c = discord.Client()
+        await c.close()
 
     async def do_docs(self, ctx, key, obj):
         page_types = {
