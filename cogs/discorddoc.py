@@ -24,7 +24,7 @@ class DiscordHelp(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Discord Docs enabled.\u001b[0m")
+        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} COG] » Discord Docs enabled.\u001b[0m")
 
 
     @commands.command(help="🔎 - Searches in discord docs.")

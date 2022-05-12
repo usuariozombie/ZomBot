@@ -7,6 +7,7 @@ from datetime import datetime
 from nextcord.ext import activities, commands
 
 
+
 class Drowpdown(nextcord.ui.Select):
 	def __init__(self, author):
 		self.author = author
@@ -82,9 +83,10 @@ class Socials(commands.Cog, name="Activities"):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Dropdowns enabled.\u001b[0m")
+		print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} COG] » Activities enabled.\u001b[0m")
 
-	@commands.command(name="act", help="Select an activity to share with your friends.")
+
+	@commands.command(name="act", help="🗃 - Select an activity to share with your friends.")
 	async def act(self, ctx):
 		if ctx.author.voice is None:
 			await ctx.send("You must be in a voice channel to use this command.")
@@ -92,9 +94,6 @@ class Socials(commands.Cog, name="Activities"):
 			view = DropdownView(ctx.author.id, 30)
 			view.message = await ctx.send("Choose an activity:", view=view)
 	    
-	@commands.Cog.listener()
-	async def on_ready(self):
-		print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Socials enabled.\u001b[0m")
 
 def setup(client):
 	client.add_cog(Socials(client))

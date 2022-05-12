@@ -64,35 +64,35 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.red(),
                 description="Member to ban - Not Found"
             )
-            embed1.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            embed1.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed1)
         if member.id == ctx.author.id:
             embed69 = nextcord.Embed(
                 color=nextcord.Color.red(),
                 description="Can not ban yourself, trust me I woulda ages ago",
             )
-            embed69.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            embed69.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed69)
         elif ctx.author.top_role.position < member.top_role.position:
             em3 = nextcord.Embed(
                 color=nextcord.Color.red(),
                 description="Member **higher** than you in the role heirarchy - Invalid Permission",
             )
-            em3.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em3.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em3)
         elif ctx.author.top_role.position == member.top_role.position:
             em3 = nextcord.Embed(
                 color=nextcord.Color.red(),
                 description="Member has same role as you in the role heirarchy - Invalid Permission",
             )
-            em3.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em3.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em3)
         guild = ctx.guild
         banMsg = random.choice(ban_msg)
         banEmbed = nextcord.Embed(
             description=f"{member.mention} {banMsg} Reason: {reason}", color=nextcord.Color.red()
         )
-        banEmbed.set_author(name=f"{ctx.bot.user.name} · Ban Successful!", icon_url=ctx.bot.user.avatar)
+        banEmbed.set_author(name=f"{ctx.bot.user.name} · Ban Successful!", icon_url=ctx.guild.icon)
         await ctx.send(embed=banEmbed)
         await member.send(f"You got banned in **{guild}** | Reason: **{reason}**")
         await member.ban(reason=reason)
@@ -104,7 +104,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no ban permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
     @commands.command(help="🆓 - Unbans a member from your server by ID")
@@ -113,7 +113,7 @@ class Moderation(commands.Cog):
         user = await self.client.fetch_user(id)
         await ctx.guild.unban(user)
         em = nextcord.Embed(description=f"You have unbanned <@{id}>")
-        em.set_author(name=f"{ctx.bot.user.name} · Unban Successful!", icon_url=ctx.bot.user.avatar)
+        em.set_author(name=f"{ctx.bot.user.name} · Unban Successful!", icon_url=ctx.guild.icon)
         await ctx.send(embed=em)
 
     @unban.error
@@ -123,7 +123,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no unban permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
     @commands.command(help="🚪 - Kicks the member from your server.")
@@ -134,35 +134,35 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="Member to kick - Not Found"
             )
-            embed1.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            embed1.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed1)
         if not (ctx.guild.me.guild_permissions.kick_members):
             embed2 = nextcord.Embed(
                 color=nextcord.Color.random(),
                 description="I require the ``Kick Members`` permisson to run this command - Missing Permission",
             )
-            embed2.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            embed2.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed2)
         if member.id == ctx.author.id:
             embed69 = nextcord.Embed(
                 color=nextcord.Color.random(),
                 description="You sadly can't kick yourself.",
             )
-            embed69.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            embed69.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed69)
         elif ctx.author.top_role.position < member.top_role.position:
             em3 = nextcord.Embed(
                 color=nextcord.Color.random(),
                 description="Member **higher** than you in the role hierarchy - Invalid Permission",
             )
-            em3.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em3.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em3)
         elif ctx.author.top_role.position == member.top_role.position:
             em4 = nextcord.Embed(
                 color=nextcord.Color.random(),
                 description="Member **higher** than you in the role hierarchy - Invalid Permission"
             )
-            em4.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em4.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em4)
         guild = ctx.guild
         kickMsg = random.choice(kick_msg)
@@ -170,7 +170,7 @@ class Moderation(commands.Cog):
             color=nextcord.Color.random(),
             description=f"{member.mention} {kickMsg} **Reason:** {reason}"
         )
-        kickEmbed.set_author(name=f"{ctx.bot.user.name} · Kick Successful! ", icon_url=ctx.bot.user.avatar)
+        kickEmbed.set_author(name=f"{ctx.bot.user.name} · Kick Successful! ", icon_url=ctx.guild.icon)
         await ctx.send(embed=kickEmbed)
         await member.send(f"You got kicked in **{guild}** | Reason: **{reason}**")
         await member.kick(reason=reason)
@@ -182,7 +182,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no kick permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
 
@@ -194,13 +194,13 @@ class Moderation(commands.Cog):
             em1 = nextcord.Embed(
                 description="Purge limit exedeed - Greater than 100",
             )
-            em1.set_author(name=f"{ctx.bot.user.name} · Clear Error! ", icon_url=ctx.bot.user.avatar)
+            em1.set_author(name=f"{ctx.bot.user.name} · Clear Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em1)
         else:
             await ctx.channel.purge(limit=amount)
             msg = nextcord.Embed(
             )
-            msg.set_author(name=f"{ctx.bot.user.name} · Clear Successful! ", icon_url=ctx.bot.user.avatar)
+            msg.set_author(name=f"{ctx.bot.user.name} · Clear Successful! ", icon_url=ctx.guild.icon)
             msg.set_footer(text=f"Clear requested by {ctx.author}")
             await ctx.send(embed=msg)
 
@@ -211,7 +211,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no clear permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
 
@@ -223,21 +223,21 @@ class Moderation(commands.Cog):
                 em1 = nextcord.Embed(
                     description="Slowmode turned off"
                 )
-                em1.set_author(name=f"{ctx.bot.user.name} · Slowmode", icon_url=ctx.bot.user.avatar)
+                em1.set_author(name=f"{ctx.bot.user.name} · Slowmode", icon_url=ctx.guild.icon)
                 await ctx.send(embed=em1)
                 await ctx.channel.edit(slowmode_delay=0)
             elif time > 21600:
                 em2 = nextcord.Embed(
                     description="Slowmode over 6 hours"
                 )
-                em2.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+                em2.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
                 await ctx.send(embed=em2)
             else:
                 await ctx.channel.edit(slowmode_delay=time)
                 em3 = nextcord.Embed(
                     description=f"Slowmode set to {time} seconds",
                 )
-                em3.set_author(name=f"{ctx.bot.user.name} · Slowmode", icon_url=ctx.bot.user.avatar)
+                em3.set_author(name=f"{ctx.bot.user.name} · Slowmode", icon_url=ctx.guild.icon)
                 await ctx.send(embed=em3)
         except Exception:
             await ctx.send("Error has occurred, notifying dev team")
@@ -250,7 +250,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no slowmode permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
     @commands.command(aliases=["giverole", "addr"], help="➕ - Gives a member a certain role.")
@@ -262,7 +262,7 @@ class Moderation(commands.Cog):
             embed = nextcord.Embed(
                 description="Please mention an user to give them a role!",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
         if role is None:
@@ -271,20 +271,20 @@ class Moderation(commands.Cog):
                     member.mention
                 ),
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
         if ctx.author.top_role.position < role.position:
             em = nextcord.Embed(
                 description="You do not have enough permissions to give this role",
             )
-            em.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            em.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em)
         if ctx.guild.me.top_role.position < role.position:
             embed = nextcord.Embed(
                 description="That role is too high for me to perform this action",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed)
         try:
             addRole = True
@@ -296,14 +296,14 @@ class Moderation(commands.Cog):
                 embed = nextcord.Embed(
                     description=f"{member.mention} already has the role you are trying to give",
                 )
-                embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+                embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
                 await ctx.send(embed=embed)
                 return
             else:
                 em = nextcord.Embed(
                     description=f"{role.mention} has been assigned to {member.mention}",
                 )
-                em.set_author(name=f"{ctx.bot.user.name} · Role Added!", icon_url=ctx.bot.user.avatar)
+                em.set_author(name=f"{ctx.bot.user.name} · Role Added!", icon_url=ctx.guild.icon)
                 await ctx.send(embed=em)
                 await member.add_roles(role)
                 return
@@ -317,7 +317,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no addrole permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
     @commands.command(aliases=["takerole", "remover"], help="➖ - Removes a certain role from a member.",)
@@ -334,7 +334,7 @@ class Moderation(commands.Cog):
             embed = nextcord.Embed(
                 description="Please mention an user to remove a role from them!",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
         if role is None:
@@ -343,20 +343,20 @@ class Moderation(commands.Cog):
                     member.mention
                 ),
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
         if ctx.author.top_role.position < role.position:
             em = nextcord.Embed(
                 description="You do not have enough permissions to remove this role",
             )
-            em.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            em.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em)
         if ctx.guild.me.top_role.position < role.position:
             embed = nextcord.Embed(
                 description="That role is too high for me to perform this action",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed)
         try:
             roleRemoved = False
@@ -369,14 +369,14 @@ class Moderation(commands.Cog):
                 embed = nextcord.Embed(
                     description=f"{member.mention} already has the role you are trying to give",
                 )
-                embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+                embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
                 await ctx.send(embed=embed)
                 return
             else:
                 em = nextcord.Embed(
                     description=f"{role.mention} has been removed from {member.mention}",
                 )
-                em.set_author(name=f"{ctx.bot.user.name} · Role Removed!", icon_url=ctx.bot.user.avatar)
+                em.set_author(name=f"{ctx.bot.user.name} · Role Removed!", icon_url=ctx.guild.icon)
                 await ctx.send(embed=em)
                 return
         except Exception:
@@ -389,12 +389,12 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no removerole permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
     
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Moderation enabled.\u001b[0m")
+        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} COG] » Moderation enabled.\u001b[0m")
     
 
     
@@ -404,21 +404,21 @@ class Moderation(commands.Cog):
             embed = nextcord.Embed(
                 description="Please mention an user to mute them!",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
         if time == None:
             embed = nextcord.Embed(
                 description="Please specify a time to mute them for!",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
         if ctx.author.top_role.position < member.top_role.position:
             em = nextcord.Embed(
                 description="You do not have enough permissions to mute this member",
             )
-            em.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            em.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em)
         else:
             time = humanfriendly.parse_timespan(time)
@@ -427,7 +427,7 @@ class Moderation(commands.Cog):
             embed = nextcord.Embed(
                 description=f"{member.mention} has been muted for {time}",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Muted!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Muted!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
     
@@ -438,7 +438,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no mute permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
 
@@ -452,7 +452,7 @@ class Moderation(commands.Cog):
             embed = nextcord.Embed(
                 description=f"{member.mention} has been unmuted",
             )
-            embed.set_author(name=f"{ctx.bot.user.name} · Unmuted!", icon_url=ctx.bot.user.avatar)
+            embed.set_author(name=f"{ctx.bot.user.name} · Unmuted!", icon_url=ctx.guild.icon)
             await ctx.send(embed=embed)
             return
 
@@ -463,7 +463,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no unmute permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
     @commands.command(help = "🎚️ - Enable or disable the different commands with this command.")
@@ -495,24 +495,24 @@ class Moderation(commands.Cog):
             embed1 = nextcord.Embed(
                 description="Member not found!"
             )
-            embed1.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed1.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed1)
         if member.id == ctx.author.id:
             embed69 = nextcord.Embed(
                 description="Sorry, you cannot ban yourself"
             )
-            embed69.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed69.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed69)
         if ctx.author.top_role.position <= member.top_role.position:
             embed2 = nextcord.Embed(
                 description="You cannot ban someone with a higher role than you!"
             )
-            embed2.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.bot.user.avatar)
+            embed2.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed2)
         em = nextcord.Embed(
             description=f"**Are you sure you want to ban {member}?**\nThis action cannot be undone and should just be used in special cases"
         )
-        em.set_author(name=f"{ctx.bot.user.name} · Are you sure?", icon_url=ctx.bot.user.avatar)
+        em.set_author(name=f"{ctx.bot.user.name} · Are you sure?", icon_url=ctx.guild.icon)
         view = BanConfirm(ctx)
         await ctx.author.send(embed=em, view=view)
         await view.wait()
@@ -524,7 +524,7 @@ class Moderation(commands.Cog):
             banEmbed = nextcord.Embed(
                 description=f"{member.mention} {banMsg} | Reason: {reason}"
             )
-            banEmbed.set_author(name=f"{ctx.bot.user.name} · Banned!", icon_url=ctx.bot.user.avatar)
+            banEmbed.set_author(name=f"{ctx.bot.user.name} · Banned!", icon_url=ctx.guild.icon)
             await ctx.author.send(embed=banEmbed)
             await member.ban(reason=reason)
             await member.send(f"You got banned in **{guild}** | Reason: **{reason}**")
@@ -532,7 +532,7 @@ class Moderation(commands.Cog):
             banEmbed = nextcord.Embed(
                 description="Your ban has been cancelled"
             )
-            banEmbed.set_author(name=f"{ctx.bot.user.name} · Ban Cancelled!", icon_url=ctx.bot.user.avatar)
+            banEmbed.set_author(name=f"{ctx.bot.user.name} · Ban Cancelled!", icon_url=ctx.guild.icon)
             await ctx.author.send(embed=banEmbed)
 
     @modban.error
@@ -542,7 +542,7 @@ class Moderation(commands.Cog):
                 color=nextcord.Color.random(),
                 description="You have no ban permisions :face_with_raised_eyebrow: - Invalid Permission"
             )
-            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.bot.user.avatar)
+            em5.set_author(name=f"{ctx.bot.user.name} · Error! ", icon_url=ctx.guild.icon)
             return await ctx.send(embed=em5)
 
 

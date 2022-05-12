@@ -158,7 +158,7 @@ class Docs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Nextcord Docs enabled.\u001b[0m")
+        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} COG] » Nextcord Docs enabled.\u001b[0m")
 
     @commands.group(name="docs", help="📚 - Searches in nextcord docs.", invoke_without_command=True)
     async def docs_group(self, ctx: commands.Context, *, obj: str = None):

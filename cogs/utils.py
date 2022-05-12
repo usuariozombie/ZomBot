@@ -1,16 +1,16 @@
 from distutils.log import error
-import time, sys, os, nextcord, requests, aiohttp, psutil, json
+import time, sys, os, nextcord, requests, aiohttp, psutil, json, asyncio
 from inspect import getsource
 from time import time
 from datetime import datetime
 from nextcord.ext import commands, tasks
 from io import BytesIO
-from main import PREFIX, IPKEY, BOT_USER_ID
+from main import IPKEY, CONFESSIONCHANNEL, APIKEY
 from global_functions import EMOJIS_TO_USE_FOR_CALCULATOR as etufc
-from nextcord import ButtonStyle
+from nextcord import ButtonStyle, Spotify
 from nextcord.ui import button, View, Button
 from pytube import YouTube
-
+from weather import *
 
 us = 0
 um = 0 
@@ -22,7 +22,6 @@ green_button_style = ButtonStyle.success
 grey_button_style = ButtonStyle.secondary
 blue_button_style = ButtonStyle.primary
 red_button_style = ButtonStyle.danger
-
 
 class CalculatorButtons(View):
     def __init__(self, owner, embed, message):
@@ -390,14 +389,14 @@ class Utils(commands.Cog):
             response = await eval("func()", args)
             if silent or (response is None) or isinstance(response, nextcord.Message):
                 em = nextcord.Embed(
-                    title="Eval Success :D",
+                    title="Eval Success!",
                     description="```Code ran without any errors```",
                 )
                 await ctx.send(embed=em)
                 del args, code
                 return
             em = nextcord.Embed(
-                title="Eval Success :o",
+                title="Eval Success without problems!",
                 description=f"```py\n{self.resolve_variable(response)}```",
             )
             em.set_footer(
@@ -406,7 +405,7 @@ class Utils(commands.Cog):
             await ctx.send(embed=em)
         except Exception as e:
             em = nextcord.Embed(
-                title="Eval Error ._.",
+                title="Eval Error!",
                 description=f"```{type(e).__name__}: {str(e)}```",
             )
             await ctx.send(embed=em)
@@ -415,7 +414,7 @@ class Utils(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} MODULE] » Utils enabled.\u001b[0m")
+        print(f"\u001b[32m[{datetime.now().strftime('%H:%M:%S')} COG] » Utils enabled.\u001b[0m")
 
     @commands.command(help = " 😳 - Steals an emoji with the url.")
     async def stealmoji(self, ctx, url:str, *, name):
@@ -484,12 +483,20 @@ class Utils(commands.Cog):
     async def sug(self, ctx, *, suggestion):
         await ctx.channel.purge(limit = 1)
         channel = nextcord.utils.get(ctx.guild.text_channels, name = '📫┃𝕊𝕦𝕘𝕖𝕣𝕖𝕟𝕔𝕚𝕒𝕤')
-        channel2 = nextcord.utils.get(ctx.guild.text_channels, name = 'admin-sugerencias')
-        suggest = nextcord.Embed(title=f"Suggestion", description=f"{ctx.message.author} suggests: **{suggestion}**")
+        suggest = nextcord.Embed(description=f"**{suggestion}**")
+        suggest.set_author(name=f"{ctx.message.author.name}'s Suggestion:", icon_url=ctx.message.author.avatar)
         sugg = await channel.send(embed=suggest)
-        await channel2.send(f"^^ Suggestion ID: {sugg.id}")
+        await channel.send(f"^^ Suggestion ID: {sugg.id}")
         await sugg.add_reaction('✅')
         await sugg.add_reaction('❌')
+    
+    @sug.error
+    async def sugerror(self, ctx, error):
+        embed = nextcord.Embed(
+            description="You didn't give me a suggestion to make.",
+        )
+        embed.set_author(name=f"{ctx.bot.user.name} · Error!", icon_url=ctx.guild.icon)
+        return await ctx.send(embed=embed)
     
     @commands.command(name="approve", help = "✅ - Approves a user's suggestion")
     async def approve(self, ctx, id:int=None):
@@ -498,7 +505,8 @@ class Utils(commands.Cog):
             return await ctx.send(embed=em)
         channel = nextcord.utils.get(ctx.guild.text_channels, name = '📫┃𝕊𝕦𝕘𝕖𝕣𝕖𝕟𝕔𝕚𝕒𝕤')
         if channel is None:
-            embed = nextcord.Embed(title='Approve Error', description='Can not find suggestion channel')
+            embed = nextcord.Embed( description='Can not find suggestion channel')
+            embed.set_author(name=f'{ctx.bot.user.name} · Error!', icon_url=ctx.guild.icon)
             return await ctx.send(embed=embed)
         suggestionMsg = await channel.fetch_message(id)
         embed = nextcord.Embed(title=f'Suggestion Approved!', description=f'The suggestion id of `{suggestionMsg.id}` has been approved by {ctx.author.mention}')
@@ -519,7 +527,7 @@ class Utils(commands.Cog):
             {'name': 'ISP', 'value': geo['isp']},
             {'name': 'Status', 'value': geo['status']},
             {'name': 'Organization', 'value': geo['org']},
-            {'name': 'Region', 'value': geo['region']},
+            {'name': 'Country Code', 'value': geo['countryCode']},
             {'name': 'IP Type', 'value': geo['ipType']},
             {'name': 'Continent', 'value': geo['continent']},
         ]
@@ -528,11 +536,108 @@ class Utils(commands.Cog):
                 em.set_footer(text=f"IP requested by: {ctx.author.name}", icon_url=ctx.author.display_avatar)
                 em.timestamp = datetime.utcnow()
                 em.add_field(name=field['name'], value=field['value'])
-                
+                em.set_author(name=f"IP Lookup", icon_url=ctx.guild.icon)
+        
         await ctx.send(embed=em)
         c = nextcord.Client()
         return await c.close()
 
+    @commands.command(help = "🎵 - Tracks what an user is playing in Spotify.")
+    async def spotify(self, ctx, user: nextcord.Member = None):
+        if not user:
+            user = ctx.author
+
+        spotify_result = next((activity for activity in user.activities if isinstance(activity, nextcord.Spotify)), None)
+        if spotify_result == None:
+            await ctx.reply(f'{user.name} is not listening to Spotify.')
+
+        if user.activities:
+            for activity in user.activities:
+                if isinstance(activity, Spotify):
+                    url=(f'https://open.spotify.com/track/{spotify_result.track_id}')
+                    embed = nextcord.Embed(
+                        title = f"{user.name}'s Spotify",
+                        description = f"Listening to [{activity.title}]({url})",
+                        color = 0xC902FF,
+                        timestamp=datetime.utcnow() )
+                    embed.set_thumbnail(url=activity.album_cover_url)
+                    embed.add_field(name="Artist", value=activity.artist)
+                    embed.add_field(name="Album", value=activity.album)
+                    embed.set_footer(text=f"{ctx.guild.name}", icon_url=ctx.guild.icon)
+                    await ctx.send(embed=embed)
+        
+    @commands.command(help="📞 - Write your confession to the confessions channel.")
+    async def confess(ctx, *, text):
+        if ctx.message.channel.id == CONFESSIONCHANNEL:
+            message = ctx.message
+            await message.delete()
+            embed = nextcord.Embed(
+                title = "New confession",
+                description= f"{text}"
+            )
+            embed.set_footer(text="Do !confess <your confession> in this channel.", icon_url=ctx.guild.icon_url)
+            await ctx.send(embed=embed)
+
+    @commands.command(help="⏰ - Reminds your tasks.")
+    async def reminder(self, ctx, time, *, task):
+        am = nextcord.AllowedMentions(everyone=True, roles=True, users=True, replied_user=True)
+        def convert(time):
+            pos = ["s", "m", "h", "d"]
+            time_dict = {"s" : 1, "m" : 60, "h" : 3600, "d" : 3600*24}
+            unit = time[-1]
+
+            if unit not in pos:
+                return -1
+            try:
+                val = int(time[:-1])
+            except:
+                return -2
+
+            return val * time_dict[unit]
+
+        converted_time = convert(time)
+
+        if converted_time == -1:
+            await ctx.reply("Time is not correct, try again later.", allowed_mentions=am)
+            return
+
+        if converted_time == -2:
+            await ctx.reply("Time must be integer.", allowed_mentions=am)
+            return
+        
+        await ctx.reply (f"**{task}** was saved and we will remind it to you in **{time}**.", allowed_mentions=am)
+
+        await asyncio.sleep(converted_time)
+        await ctx.send(f"Wake up {ctx.author.mention} you have to {task}!", allowed_mentions=am)
+    
+    @reminder.error
+    async def reminder_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.reply("You need to specify time and task.", allowed_mentions=nextcord.AllowedMentions(everyone=True, roles=True, users=True, replied_user=True))
+    
+    @commands.command(help="🤳 - Shows user's avatar.")
+    async def avatar(self, ctx, *, member : nextcord.Member = None):
+        if member == None:
+            member = ctx.author
+
+        memberAvatar = member.avatar
+
+        avaEmbed = nextcord.Embed(color=nextcord.Color.random())
+        avaEmbed.set_image(url = memberAvatar)
+        avaEmbed.set_author(name=f"{member.name}'s avatar", icon_url=member.avatar)
+        avaEmbed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar)
+        await ctx.send(embed = avaEmbed)
+    
+    @commands.command(help="🌡️ - Shows the weather of a city.")
+    async def weather(self ,ctx, *, location):
+        url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={APIKEY}&units=metric'
+        try:
+            data=json.loads(requests.get(url).content)
+            data = parse_data(json.loads(requests.get(url).content)['main'])
+            await ctx.send(embed=weather_message(data, location))
+        except KeyError:
+            await ctx.send(embed=error_message(location))
+                    
 
 
 def setup(client):
