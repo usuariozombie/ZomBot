@@ -1,5 +1,8 @@
 {
     "prefix": ">",
     "token": "TOKEN",
-    "ipkey": "KEY"
+    "ipkey": "KEY",
+    "api_key": "KEY",
+    "confession_channel": "YourConfessionChannelID",
+    "bot_user_id": "YourBotID"
 }
